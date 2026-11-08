@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>语音识别对比</title>
+<style>
+  :root {
+    --bg: #f6f6f9; --card: #fff; --text: #1c1b22; --muted: #77768a; --line: #e4e3ec;
+    --accent: #6c4cf1; --accent-soft: #efebfe; --ok: #1f9d63; --bad: #d64545; --bad-soft: #fdeeee; --best: #fff8e1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141318; --card: #1d1c23; --text: #ecebf3; --muted: #9391a6; --line: #2d2c37;
+      --accent: #8c73ff; --accent-soft: #272342; --ok: #46c388; --bad: #ff7676; --bad-soft: #3a2024; --best: #3a3320;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 -apple-system, "PingFang SC", "Helvetica Neue", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .rec-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  #recBtn { width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; font-size: 14px; cursor: pointer; flex: none; transition: transform .1s; }
+  #recBtn:active { transform: scale(.96); }
+  #recBtn.on { background: var(--bad); }
+  #recBtn:disabled { opacity: .5; cursor: wait; }
+  .meter-wrap { flex: 1; min-width: 200px; }
+  #meter { height: 10px; background: var(--accent-soft); border-radius: 5px; overflow: hidden; }
+  #meterBar { height: 100%; width: 0; background: var(--accent); transition: width .06s; }
+  #status { margin-top: 8px; font-size: 13px; color: var(--muted); min-height: 20px; }
+  .opts { margin-top: 16px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+  .opts input[type=text] { flex: 1; min-width: 240px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; }
+  .warn { margin-top: 12px; padding: 8px 12px; border-radius: 8px; background: var(--bad-soft); color: var(--bad); font-size: 13px; display: none; }
+  .notice { margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .round { margin-top: 22px; }
+  .round-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .round-head h2 { font-size: 15px; margin: 0; }
+  .round-head audio { height: 32px; }
+  .ref { font-size: 13px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .res { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .res.best { background: var(--best); }
+  .res.fail { background: var(--bad-soft); }
+  .res .name { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .res .ms { font-size: 22px; font-weight: 600; margin: 2px 0 6px; font-variant-numeric: tabular-nums; }
+  .res .ms small { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+  .res .text { white-space: pre-wrap; word-break: break-word; }
+  .res .err { color: var(--bad); font-size: 13px; word-break: break-all; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 8px; background: var(--ok); color: #fff; margin-left: 6px; vertical-align: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>语音识别对比</h1>
+  <div class="sub">录一段话，同时发给 3 个硅基流动识别模型，比较耗时和结果。点按钮或按空格开始/结束。</div>
+
+  <div class="panel">
+    <div class="rec-row">
+      <button id="recBtn">开始录音</button>
+      <div class="meter-wrap">
+        <div id="meter"><div id="meterBar"></div></div>
+        <div id="status">准备就绪</div>
+      </div>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="optDsp" checked> 浏览器自带降噪/回声消除</label>
+      <input type="text" id="refText" placeholder="（可选）你实际说的话，方便对照">
+    </div>
+    <div class="warn" id="warn"></div>
+    <div class="notice">每次录音会调用 3 次付费接口（每个模型一次）。音频只发往本机服务和硅基流动，key 不会出现在网页里。</div>
+  </div>
+
+  <div id="rounds"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const recBtn = $('recBtn'), meterBar = $('meterBar'), statusEl = $('status');
+let models = [], recorder = null, chunks = [], stream = null, audioCtx = null, raf = 0, startedAt = 0, busy = false, roundNo = 0;
+
+fetch('/config').then(r => r.json()).then(c => {
+  models = c.models;
+  if (!c.keySet) showWarn('服务进程里没有 SILICONFLOW_API_KEY，请从已加载该变量的终端启动 server.py。');
+}).catch(() => showWarn('连不上本机服务，请先运行 server.py。'));
+
+function showWarn(t) { const w = $('warn'); w.textContent = t; w.style.display = 'block'; }
+function setStatus(t) { statusEl.textContent = t; }
+
+recBtn.addEventListener('click', toggle);
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && !e.repeat && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); toggle(); }
+});
+
+async function toggle() {
+  if (busy) return;
+  if (recorder && recorder.state === 'recording') return stop();
+  await start();
+}
+
+async function start() {
+  try {
+    const dsp = $('optDsp').checked;
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: dsp, noiseSuppression: dsp, autoGainControl: dsp } });
+  } catch (e) {
+    return showWarn('无法使用麦克风：' + e.message + '（需要在浏览器里允许麦克风权限）');
+  }
+  $('warn').style.display = 'none';
+  chunks = [];
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
+  recorder.onstop = onStopped;
+  recorder.start();
+  startedAt = performance.now();
+  audioCtx = new AudioContext();
+  const an = audioCtx.createAnalyser(); an.fftSize = 1024;
+  audioCtx.createMediaStreamSource(stream).connect(an);
+  const buf = new Uint8Array(an.fftSize);
+  (function tick() {
+    an.getByteTimeDomainData(buf);
+    let peak = 0; for (const v of buf) peak = Math.max(peak, Math.abs(v - 128));
+    meterBar.style.width = Math.min(100, peak / 128 * 140) + '%';
+    setStatus('录音中 ' + ((performance.now() - startedAt) / 1000).toFixed(1) + ' 秒（再点一次结束）');
+    raf = requestAnimationFrame(tick);
+  })();
+  recBtn.textContent = '结束'; recBtn.classList.add('on');
+}
+
+function stop() {
+  cancelAnimationFrame(raf); meterBar.style.width = '0';
+  recorder.stop();
+  stream.getTracks().forEach(t => t.stop());
+  audioCtx && audioCtx.close();
+  recBtn.textContent = '开始录音'; recBtn.classList.remove('on');
+}
+
+async function onStopped() {
+  const dur = (performance.now() - startedAt) / 1000;
+  if (dur < 0.6) return setStatus('录音太短（不到 0.6 秒），已丢弃');
+  busy = true; recBtn.disabled = true;
+  try {
+    setStatus('转换为 16kHz 单声道 WAV…');
+    const wav = await toWav16k(new Blob(chunks, { type: recorder.mimeType }));
+    setStatus(`已录 ${dur.toFixed(1)} 秒，正在同时发给 ${models.length} 个模型…`);
+    const t0 = performance.now();
+    const resp = await fetch('/transcribe', { method: 'POST', body: wav });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+    addRound(wav, dur, data, $('refText').value.trim());
+    setStatus(`完成，总耗时 ${((performance.now() - t0) / 1000).toFixed(2)} 秒`);
+  } catch (e) {
+    setStatus('出错：' + e.message);
+  } finally {
+    busy = false; recBtn.disabled = false;
+  }
+}
+
+async function toWav16k(blob) {
+  const ctx = new AudioContext();
+  const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+  ctx.close();
+  const rate = 16000;
+  const off = new OfflineAudioContext(1, Math.ceil(decoded.duration * rate), rate);
+  const src = off.createBufferSource(); src.buffer = decoded; src.connect(off.destination); src.start();
+  const pcm = (await off.startRendering()).getChannelData(0);
+  const out = new DataView(new ArrayBuffer(44 + pcm.length * 2));
+  const w = (o, s) => [...s].forEach((c, i) => out.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); out.setUint32(4, 36 + pcm.length * 2, true); w(8, 'WAVEfmt ');
+  out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true);
+  out.setUint32(24, rate, true); out.setUint32(28, rate * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true);
+  w(36, 'data'); out.setUint32(40, pcm.length * 2, true);
+  pcm.forEach((v, i) => out.setInt16(44 + i * 2, Math.max(-1, Math.min(1, v)) * 0x7fff, true));
+  return new Blob([out], { type: 'audio/wav' });
+}
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function addRound(wav, dur, data, ref) {
+  roundNo++;
+  const round = el('div', 'round');
+  const head = el('div', 'round-head');
+  head.append(el('h2', '', `第 ${roundNo} 段 · ${dur.toFixed(1)} 秒`));
+  const audio = document.createElement('audio'); audio.controls = true; audio.src = URL.createObjectURL(wav);
+  head.append(audio);
+  if (ref) head.append(el('span', 'ref', '实际：' + ref));
+  round.append(head);
+
+  const okMs = data.results.filter(r => r.ok).map(r => r.ms);
+  const fastest = okMs.length ? Math.min(...okMs) : -1;
+  const grid = el('div', 'grid');
+  for (const r of data.results) {
+    const card = el('div', 'res' + (r.ok ? (r.ms === fastest && okMs.length > 1 ? ' best' : '') : ' fail'));
+    const name = el('div', 'name', r.model);
+    const ms = el('div', 'ms', (r.ms / 1000).toFixed(2) + ' 秒');
+    if (r.ok && r.ms === fastest && okMs.length > 1) ms.append(el('span', 'tag', '最快'));
+    ms.append(el('small', '', r.ok ? '' : '失败'));
+    card.append(name, ms);
+    card.append(r.ok ? el('div', 'text', r.text || '（空结果）') : el('div', 'err', r.error));
+    grid.append(card);
+  }
+  round.append(grid);
+  $('rounds').prepend(round);
+}
+</script>
+</body>
+</html>

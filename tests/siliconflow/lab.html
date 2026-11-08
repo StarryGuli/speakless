@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>识别+纠错对比</title>
+<style>
+  :root {
+    --bg: #f6f6f9; --card: #fff; --text: #1c1b22; --muted: #77768a; --line: #e4e3ec;
+    --accent: #6c4cf1; --accent-soft: #efebfe; --ok: #1f9d63; --ok-soft: #e6f6ee;
+    --bad: #d64545; --bad-soft: #fdeeee; --warn: #b7791f; --warn-soft: #fff6df; --bar: #cfc6fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141318; --card: #1d1c23; --text: #ecebf3; --muted: #9391a6; --line: #2d2c37;
+      --accent: #8c73ff; --accent-soft: #272342; --ok: #46c388; --ok-soft: #1c2f26;
+      --bad: #ff7676; --bad-soft: #3a2024; --warn: #e8b35a; --warn-soft: #3a3320; --bar: #4a3f8f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 -apple-system, "PingFang SC", "Helvetica Neue", sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 32px 0 12px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .sub a { color: var(--accent); }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  .stat.hero { background: var(--text); color: var(--bg); }
+  .stat .k { font-size: 12px; opacity: .7; }
+  .stat .v { font-size: 22px; font-weight: 600; margin: 2px 0; word-break: break-all; }
+  .stat .d { font-size: 12px; opacity: .75; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; white-space: nowrap; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.best td { background: var(--accent-soft); }
+  tr.bad td { background: var(--bad-soft); }
+  .scroll { overflow-x: auto; }
+  .barcell { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+  .bar { height: 8px; border-radius: 4px; background: var(--bar); min-width: 2px; }
+  .bar.red { background: var(--bad); }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 8px; background: var(--accent); color: #fff; margin-left: 6px; }
+  .tag.gray { background: var(--muted); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .mono { word-break: break-all; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+  .case { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 8px; background: var(--card); font-size: 13px; }
+  .case .lbl { color: var(--muted); font-size: 11px; }
+  .case .out { display: flex; gap: 8px; align-items: baseline; margin-top: 2px; }
+  .case .out b { font-weight: 500; min-width: 190px; color: var(--muted); font-size: 12px; flex: none; }
+  .case .out.good span { color: var(--ok); }
+  .case .out.diff span { color: var(--bad); }
+  /* 自己试 */
+  .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+  .col { flex: 1; min-width: 260px; }
+  label.t { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  textarea, select, input[type=text] { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; font-size: 13px; }
+  textarea { min-height: 84px; resize: vertical; }
+  .chk { display: block; font-size: 13px; padding: 2px 0; }
+  .chk small { color: var(--muted); }
+  button { border: 0; border-radius: 10px; padding: 9px 16px; font: inherit; font-size: 14px; cursor: pointer; background: var(--accent); color: #fff; }
+  button.sec { background: var(--accent-soft); color: var(--accent); }
+  button.rec.on { background: var(--bad); color: #fff; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .meter { height: 6px; background: var(--accent-soft); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .meter > div { height: 100%; width: 0; background: var(--accent); }
+  .status { font-size: 13px; color: var(--muted); margin-top: 8px; min-height: 20px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+  .tabs button { background: var(--accent-soft); color: var(--accent); padding: 6px 12px; font-size: 13px; }
+  .tabs button.on { background: var(--accent); color: #fff; }
+  .src { margin-top: 16px; }
+  .src h3 { font-size: 14px; margin: 0 0 6px; }
+  .raw { background: var(--warn-soft); border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 8px; }
+  .raw small { color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  .res { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+  .res.best { background: var(--ok-soft); border-color: var(--ok); }
+  .res.slow { background: var(--bad-soft); }
+  .res .name { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .res .ms { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .res .ms small { font-weight: 400; color: var(--muted); }
+  .res .err { color: var(--bad); word-break: break-all; }
+  .warnbox { padding: 8px 12px; border-radius: 8px; background: var(--bad-soft); color: var(--bad); font-size: 13px; margin-top: 10px; display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>识别 + 纠错对比</h1>
+  <div class="sub">上半部分是我已经跑好的基准测试结果；下半部分可以自己输入文字或录音来测。　<a href="/">← 回到 9 个识别模型对比</a></div>
+
+  <h2>一、基准测试结果</h2>
+  <div id="benchEmpty" class="note"></div>
+  <div class="cards" id="cards"></div>
+
+  <div class="panel" style="margin-top:14px">
+    <b style="font-size:14px">纠错模型排名</b>
+    <div class="note" style="margin:2px 0 8px">错字率越低越好；"原始"是不纠错时的错字率。中位耗时是单次纠错的典型等待，最大值反映偶发的慢请求。</div>
+    <div class="scroll"><table id="corrTable"></table></div>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <b style="font-size:14px">识别 × 纠错 组合（真实录音）</b>
+    <div class="note" style="margin:2px 0 8px">预估总耗时 = 识别平均耗时 + 纠错中位耗时。语音输入等几秒可以，超过 10 秒标红。真实录音只有 2 段带参考答案，只能看大致趋势。</div>
+    <div class="scroll"><table id="comboTable"></table></div>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <b style="font-size:14px">逐条明细</b>
+    <div class="note" style="margin:2px 0">绿色=和参考答案一致，红色=有出入。点开看每个模型的输出。</div>
+    <div id="caseList"></div>
+  </div>
+
+  <h2>二、自己测</h2>
+  <div class="panel">
+    <div class="tabs" id="srcTabs">
+      <button data-m="text" class="on">输入文字</button>
+      <button data-m="saved">已存的录音</button>
+      <button data-m="rec">现在录音</button>
+    </div>
+    <div class="row">
+      <div class="col" style="flex:1.6">
+        <div id="modeText">
+          <label class="t">把识别出来的原文粘贴进来（或直接写一句带错别字的话）</label>
+          <textarea id="rawText" placeholder="例如：我把CM因二上的engine X配置改了一下"></textarea>
+        </div>
+        <div id="modeSaved" style="display:none">
+          <label class="t">选一段已存的录音（会重新调用识别模型）</label>
+          <select id="savedSel"></select>
+          <audio id="savedAudio" controls style="width:100%;margin-top:8px;height:34px"></audio>
+        </div>
+        <div id="modeRec" style="display:none">
+          <button class="rec" id="recBtn">开始录音</button>
+          <div class="meter"><div id="meterBar"></div></div>
+          <div class="note">录完会自动存盘并开始识别 + 纠错。浏览器降噪：
+            <label><input type="checkbox" id="optDsp" checked> 开</label></div>
+        </div>
+        <label class="t">（可选）你实际想表达的正确文字，填了会显示每个结果的错字率</label>
+        <input type="text" id="refText" placeholder="正确答案">
+      </div>
+      <div class="col">
+        <label class="t">识别模型（录音时才用）</label>
+        <div id="asrBox"></div>
+        <label class="t">纠错模型</label>
+        <div id="corrBox"></div>
+        <input type="text" id="customCorr" placeholder="自己加一个模型名，如 Qwen/Qwen3-8B" style="margin-top:6px">
+      </div>
+    </div>
+    <label class="t">术语表（每行一个，决定纠错时往哪个词靠；改了点保存）</label>
+    <textarea id="glossary" style="min-height:110px"></textarea>
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button id="runBtn">开始测试</button>
+      <button class="sec" id="saveGloss">保存术语表</button>
+      <span class="note" style="margin:0">每次点击会调用付费接口：每个纠错模型一次（录音模式再加每个识别模型一次）。</span>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="warnbox" id="warn"></div>
+    <div id="results"></div>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const short = m => m.split('/').pop();
+const pct = x => (x * 100).toFixed(1) + '%';
+const sec = ms => (ms / 1000).toFixed(2);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const norm = s => (s || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+function lev(a, b) {
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] !== b[j - 1]));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+const cer = (out, ref) => { const r = norm(ref); return lev(norm(out), r) / Math.max(1, r.length); };
+
+/* ---------------- 一、基准测试结果 ---------------- */
+fetch('/bench').then(r => r.ok ? r.json() : Promise.reject()).then(renderBench).catch(() => { $('benchEmpty').textContent = '还没有基准测试结果（运行 bench.py 生成）。'; });
+
+function renderBench(d) {
+  const rows = [...d.correctors].sort((a, b) => a.cer - b.cer);
+  const best = rows.find(r => r.id === d.recommend);
+  const fastestAsr = [...d.asr].sort((a, b) => a.raw_cer - b.raw_cer)[0];
+  const bestCombo = d.combos.filter(c => c.corrector === d.recommend).sort((a, b) => a.cer - b.cer)[0];
+  const cards = $('cards');
+  const card = (cls, k, v, dsc) => { const c = el('div', 'stat ' + cls); c.append(el('div', 'k', k), el('div', 'v', v), el('div', 'd', dsc)); cards.append(c); };
+  if (best) card('hero', '推荐纠错模型', short(best.id), `错字率 ${pct(best.raw_cer)} → ${pct(best.cer)}，中位 ${sec(best.lat_median)} 秒`);
+  card('', '识别模型', short(fastestAsr.id), `识别平均 ${sec(fastestAsr.ms_mean)} 秒，原始错字率最低`);
+  if (best && bestCombo) card('', '推荐组合预估总耗时', sec(bestCombo.est_ms) + ' 秒', `${short(bestCombo.asr)} + ${short(best.id)}`);
+  card('', '测试规模', `${d.cases.length} 条 × ${d.correctors.length} 个模型`, `生成于 ${d.generated}，术语表 ${d.glossary_terms} 项`);
+
+  const maxCer = Math.max(...rows.map(r => r.cer), 0.01);
+  const t = $('corrTable');
+  t.innerHTML = '<tr><th>纠错模型</th><th>错字率</th><th>原始</th><th>专有词命中</th><th>不误改</th><th>中位耗时</th><th>最大耗时</th><th>失败</th><th>价格 ¥/M</th></tr>';
+  for (const r of rows) {
+    const tr = el('tr', r.id === d.recommend ? 'best' : (r.fails > 0 || r.cer > r.raw_cer ? 'bad' : ''));
+    const name = el('td', 'mono', short(r.id));
+    if (r.id === d.recommend) name.append(el('span', 'tag', '推荐'));
+    const bar = el('td'); const bc = el('div', 'barcell');
+    const b = el('div', 'bar' + (r.cer > r.raw_cer ? ' red' : '')); b.style.width = Math.max(2, r.cer / maxCer * 110) + 'px';
+    bc.append(b, el('span', '', pct(r.cer))); bar.append(bc);
+    tr.append(name, bar, el('td', 'num', pct(r.raw_cer)), el('td', 'num', Math.round(r.term_hit * 100) + '%'),
+      el('td', 'num', `${r.clean_ok}/${r.clean_total}`), el('td', 'num', sec(r.lat_median) + ' 秒'),
+      el('td', 'num', sec(r.lat_max) + ' 秒'), el('td', 'num', r.fails || '0'), el('td', 'num', r.price));
+    t.append(tr);
+  }
+
+  const ct = $('comboTable');
+  const asrIds = d.asr.map(a => a.id);
+  ct.innerHTML = '<tr><th>纠错 \\ 识别</th>' + asrIds.map(a => `<th>${short(a)}<br><span style="font-weight:400">识别 ${sec(d.asr.find(x => x.id === a).ms_mean)} 秒 · 原始 ${pct(d.asr.find(x => x.id === a).raw_cer)}</span></th>`).join('') + '</tr>';
+  for (const r of rows) {
+    const tr = el('tr', r.id === d.recommend ? 'best' : '');
+    tr.append(el('td', 'mono', short(r.id)));
+    for (const a of asrIds) {
+      const c = d.combos.find(x => x.asr === a && x.corrector === r.id);
+      const td = el('td', 'num', `${pct(c.cer)} · ${sec(c.est_ms)} 秒`);
+      if (c.est_ms > 10000) td.style.color = 'var(--bad)';
+      tr.append(td);
+    }
+    ct.append(tr);
+  }
+
+  const list = $('caseList');
+  const groups = { real: '真实录音（识别后的文字）', synthetic: '手写的中英夹杂句子', clean: '本来就对的句子（应原样输出）' };
+  for (const g of ['real', 'synthetic', 'clean']) {
+    const det = el('details'); det.append(el('summary', '', groups[g] + `（${d.cases.filter(c => c.group === g).length} 条）`));
+    for (const c of d.cases.filter(x => x.group === g)) {
+      const box = el('div', 'case');
+      box.append(el('div', 'lbl', c.id), el('div', '', '输入：' + c.input), el('div', '', '参考：' + (c.ref || '（这段没有参考答案，只看输出）')));
+      for (const r of rows) {
+        const o = c.outputs[r.id];
+        const same = c.ref && o.ok && norm(o.text) === norm(c.ref);
+        const row = el('div', 'out ' + (c.ref ? (same ? 'good' : 'diff') : ''));
+        row.append(el('b', '', `${short(r.id)} · ${sec(o.ms)}s`), el('span', '', o.ok ? o.text : '失败：' + o.error));
+        box.append(row);
+      }
+      det.append(box);
+    }
+    list.append(det);
+  }
+}
+
+/* ---------------- 二、自己测 ---------------- */
+let cfg = null, mode = 'text', busy = false;
+fetch('/config2').then(r => r.json()).then(c => {
+  cfg = c;
+  $('glossary').value = c.glossary;
+  if (!c.keySet) showWarn('服务进程里没有 SILICONFLOW_API_KEY，请从已加载该变量的终端启动 server.py。');
+  const defaults = ['deepseek-ai/DeepSeek-V4.1-Flash', 'Qwen/Qwen3.5-122B-A10B', 'Qwen/Qwen3.5-35B-A3B'];
+  for (const a of c.asr) $('asrBox').append(chk('asr', a.id, a.top, ''));
+  for (const k of c.correctors) $('corrBox').append(chk('corr', k.id, defaults.includes(k.id), k.price === '未查到' ? '' : `¥${k.price}`));
+  for (const f of c.recordings) $('savedSel').append(new Option(f, f));
+  setSaved();
+}).catch(() => showWarn('连不上本机服务，请先运行 server.py。'));
+
+function chk(name, id, on, hint) {
+  const l = el('label', 'chk'); const i = document.createElement('input'); i.type = 'checkbox'; i.name = name; i.value = id; i.checked = on;
+  l.append(i, ' ' + short(id) + ' ', el('small', '', hint)); return l;
+}
+const picked = name => [...document.querySelectorAll(`input[name=${name}]:checked`)].map(i => i.value);
+function showWarn(t) { const w = $('warn'); w.textContent = t; w.style.display = t ? 'block' : 'none'; }
+function setStatus(t) { $('status').textContent = t; }
+function setSaved() { const v = $('savedSel').value; if (v) $('savedAudio').src = `/rec/${v}.wav`; }
+$('savedSel').addEventListener('change', setSaved);
+
+$('srcTabs').addEventListener('click', e => {
+  const m = e.target.dataset.m; if (!m) return;
+  mode = m;
+  document.querySelectorAll('#srcTabs button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  $('modeText').style.display = m === 'text' ? '' : 'none';
+  $('modeSaved').style.display = m === 'saved' ? '' : 'none';
+  $('modeRec').style.display = m === 'rec' ? '' : 'none';
+  $('runBtn').style.display = m === 'rec' ? 'none' : '';
+});
+
+$('saveGloss').addEventListener('click', async () => {
+  await fetch('/glossary', { method: 'POST', body: JSON.stringify({ text: $('glossary').value }) });
+  setStatus('术语表已保存');
+});
+
+function correctorList() {
+  const l = picked('corr'); const c = $('customCorr').value.trim();
+  if (c && !l.includes(c)) l.push(c);
+  return l;
+}
+
+$('runBtn').addEventListener('click', () => run(null));
+
+async function run(wav) {
+  if (busy) return;
+  const corr = correctorList();
+  if (!corr.length) return showWarn('至少选一个纠错模型');
+  showWarn(''); busy = true; $('runBtn').disabled = true; $('recBtn').disabled = true;
+  const glossary = $('glossary').value;
+  try {
+    let sources = [];
+    if (mode === 'text') {
+      const text = $('rawText').value.trim();
+      if (!text) throw new Error('先输入要纠错的文字');
+      sources = [{ label: '你输入的文字', text, ms: 0 }];
+    } else {
+      const asr = picked('asr');
+      if (!asr.length) throw new Error('至少选一个识别模型');
+      setStatus('识别中…');
+      const q = `models=${encodeURIComponent(asr.join(','))}`;
+      const resp = mode === 'rec'
+        ? await fetch(`/asr?${q}`, { method: 'POST', body: wav })
+        : await fetch(`/asr?${q}&file=${encodeURIComponent($('savedSel').value)}`, { method: 'POST' });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'HTTP ' + resp.status);
+      sources = data.results.map(r => ({ label: short(r.model), text: r.ok ? r.text : null, ms: r.ms, error: r.error }));
+      if (data.file && mode === 'rec') { $('savedSel').append(new Option(data.file, data.file)); }
+    }
+    setStatus(`纠错中（${corr.length} 个模型）…`);
+    const out = await Promise.all(sources.map(s => s.text
+      ? fetch('/correct', { method: 'POST', body: JSON.stringify({ text: s.text, models: corr, glossary }) }).then(r => r.json())
+      : Promise.resolve({ results: [] })));
+    render(sources, out, corr);
+    setStatus('完成');
+  } catch (e) {
+    setStatus(''); showWarn(e.message);
+  } finally {
+    busy = false; $('runBtn').disabled = false; $('recBtn').disabled = false;
+  }
+}
+
+function render(sources, outs, corr) {
+  const box = $('results'); box.replaceChildren();
+  const ref = $('refText').value.trim();
+  sources.forEach((s, i) => {
+    const wrap = el('div', 'src');
+    wrap.append(el('h3', '', s.label + (s.ms ? ` · 识别 ${sec(s.ms)} 秒` : '')));
+    if (!s.text) { wrap.append(el('div', 'res err', '识别失败：' + (s.error || '没有结果'))); box.append(wrap); return; }
+    const raw = el('div', 'raw'); raw.append(el('small', '', '原文　'), document.createTextNode(s.text));
+    if (ref) raw.append(el('small', '', `　错字率 ${pct(cer(s.text, ref))}`));
+    wrap.append(raw);
+    const results = outs[i].results;
+    const okCers = ref ? results.filter(r => r.ok).map(r => cer(r.text, ref)) : [];
+    const bestCer = okCers.length ? Math.min(...okCers) : null;
+    const grid = el('div', 'grid');
+    for (const r of results) {
+      const total = s.ms + r.ms;
+      const c = ref && r.ok ? cer(r.text, ref) : null;
+      const card = el('div', 'res' + (c != null && c === bestCer ? ' best' : '') + (total > 10000 ? ' slow' : ''));
+      card.append(el('div', 'name', short(r.model)));
+      const ms = el('div', 'ms', `纠错 ${sec(r.ms)} 秒`);
+      ms.append(el('small', '', s.ms ? `　总计 ${sec(total)} 秒` : '')); if (c != null) ms.append(el('small', '', `　错字率 ${pct(c)}`));
+      card.append(ms, r.ok ? el('div', '', r.text) : el('div', 'err', r.error));
+      grid.append(card);
+    }
+    wrap.append(grid); box.append(wrap);
+  });
+}
+
+/* 录音（转 16kHz 单声道 WAV 后自动测试） */
+let recorder = null, chunks = [], stream = null, actx = null, raf = 0, t0 = 0;
+$('recBtn').addEventListener('click', async () => {
+  if (busy) return;
+  if (recorder && recorder.state === 'recording') return stopRec();
+  try {
+    const dsp = $('optDsp').checked;
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: dsp, noiseSuppression: dsp, autoGainControl: dsp } });
+  } catch (e) { return showWarn('无法使用麦克风：' + e.message); }
+  showWarn(''); chunks = [];
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
+  recorder.onstop = async () => {
+    const dur = (performance.now() - t0) / 1000;
+    if (dur < 0.6) return setStatus('录音太短，已丢弃');
+    setStatus('转换音频…');
+    run(await toWav16k(new Blob(chunks, { type: recorder.mimeType })));
+  };
+  recorder.start(); t0 = performance.now();
+  actx = new AudioContext(); const an = actx.createAnalyser(); an.fftSize = 1024;
+  actx.createMediaStreamSource(stream).connect(an);
+  const buf = new Uint8Array(an.fftSize);
+  (function tick() {
+    an.getByteTimeDomainData(buf);
+    let peak = 0; for (const v of buf) peak = Math.max(peak, Math.abs(v - 128));
+    $('meterBar').style.width = Math.min(100, peak / 128 * 140) + '%';
+    setStatus('录音中 ' + ((performance.now() - t0) / 1000).toFixed(1) + ' 秒（再点一次结束）');
+    raf = requestAnimationFrame(tick);
+  })();
+  $('recBtn').textContent = '结束并测试'; $('recBtn').classList.add('on');
+});
+function stopRec() {
+  cancelAnimationFrame(raf); $('meterBar').style.width = '0';
+  recorder.stop(); stream.getTracks().forEach(t => t.stop()); actx && actx.close();
+  $('recBtn').textContent = '开始录音'; $('recBtn').classList.remove('on');
+}
+async function toWav16k(blob) {
+  const ctx = new AudioContext();
+  const decoded = await ctx.decodeAudioData(await blob.arrayBuffer()); ctx.close();
+  const rate = 16000;
+  const off = new OfflineAudioContext(1, Math.ceil(decoded.duration * rate), rate);
+  const src = off.createBufferSource(); src.buffer = decoded; src.connect(off.destination); src.start();
+  const pcm = (await off.startRendering()).getChannelData(0);
+  const out = new DataView(new ArrayBuffer(44 + pcm.length * 2));
+  const w = (o, s) => [...s].forEach((c, i) => out.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); out.setUint32(4, 36 + pcm.length * 2, true); w(8, 'WAVEfmt ');
+  out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true);
+  out.setUint32(24, rate, true); out.setUint32(28, rate * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true);
+  w(36, 'data'); out.setUint32(40, pcm.length * 2, true);
+  pcm.forEach((v, i) => out.setInt16(44 + i * 2, Math.max(-1, Math.min(1, v)) * 0x7fff, true));
+  return new Blob([out], { type: 'audio/wav' });
+}
+</script>
+</body>
+</html>

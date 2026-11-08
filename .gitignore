@@ -1,0 +1,7 @@
+# 录音是个人声音数据，永不入 git
+tests/siliconflow/recordings/
+*.wav
+# 构建产物
+app/.build/
+app/build/
+.DS_Store

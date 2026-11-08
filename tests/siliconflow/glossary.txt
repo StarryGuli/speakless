@@ -1,0 +1,15 @@
+硅基流动 / SiliconFlow
+千问 / Qwen
+API Key
+环境变量
+Claude Code
+Tailscale
+nginx
+WebSocket
+GitHub
+token
+SSH
+Python
+React
+httpx
+驼峰命名

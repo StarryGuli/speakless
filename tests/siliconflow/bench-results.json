@@ -1,0 +1,298 @@
+{
+ "generated": "2026-10-30 23:30",
+ "glossary_terms": 41,
+ "correctors": [
+  {
+   "id": "Qwen/Qwen3.5-35B-A3B",
+   "price": "0.4 / 3.2",
+   "cer": 0.0402,
+   "raw_cer": 0.1315,
+   "cer_real": 0.1575,
+   "raw_real": 0.1459,
+   "cer_synth": 0.0082,
+   "raw_synth": 0.1573,
+   "term_hit": 0.8889,
+   "clean_ok": 4,
+   "clean_total": 4,
+   "lat_median": 3068,
+   "lat_max": 5820,
+   "fails": 0
+  },
+  {
+   "id": "Qwen/Qwen3.5-122B-A10B",
+   "price": "0.8 / 6.4",
+   "cer": 0.0335,
+   "raw_cer": 0.1315,
+   "cer_real": 0.1431,
+   "raw_real": 0.1459,
+   "cer_synth": 0.0027,
+   "raw_synth": 0.1573,
+   "term_hit": 0.9444,
+   "clean_ok": 4,
+   "clean_total": 4,
+   "lat_median": 1679,
+   "lat_max": 7244,
+   "fails": 0
+  },
+  {
+   "id": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+   "price": "未查到",
+   "cer": 0.0583,
+   "raw_cer": 0.1315,
+   "cer_real": 0.1412,
+   "raw_real": 0.1459,
+   "cer_synth": 0.0428,
+   "raw_synth": 0.1573,
+   "term_hit": 0.8889,
+   "clean_ok": 4,
+   "clean_total": 4,
+   "lat_median": 1740,
+   "lat_max": 6768,
+   "fails": 0
+  },
+  {
+   "id": "zai-org/GLM-5.3-Flash",
+   "price": "0.8 / 2.8",
+   "cer": 0.2432,
+   "raw_cer": 0.1315,
+   "cer_real": 0.261,
+   "raw_real": 0.1459,
+   "cer_synth": 0.2941,
+   "raw_synth": 0.1573,
+   "term_hit": 0.7778,
+   "clean_ok": 4,
+   "clean_total": 4,
+   "lat_median": 14006,
+   "lat_max": 41224,
+   "fails": 9
+  },
+  {
+   "id": "stepfun-ai/Step-3.5-Flash",
+   "price": "0.7 / 2.1",
+   "cer": 0.6942,
+   "raw_cer": 0.1315,
+   "cer_real": 0.5858,
+   "raw_real": 0.1459,
+   "cer_synth": 0.837,
+   "raw_synth": 0.1573,
+   "term_hit": 0.1944,
+   "clean_ok": 3,
+   "clean_total": 4,
+   "lat_median": 11105,
+   "lat_max": 12486,
+   "fails": 1
+  },
+  {
+   "id": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "price": "2 / 8",
+   "cer": 0.03,
+   "raw_cer": 0.1315,
+   "cer_real": 0.1209,
+   "raw_real": 0.1459,
+   "cer_synth": 0.0049,
+   "raw_synth": 0.1573,
+   "term_hit": 0.9444,
+   "clean_ok": 4,
+   "clean_total": 4,
+   "lat_median": 1287,
+   "lat_max": 11156,
+   "fails": 0
+  },
+  {
+   "id": "deepseek-ai/DeepSeek-V3.2",
+   "price": "4 / 6",
+   "cer": 0.0407,
+   "raw_cer": 0.1315,
+   "cer_real": 0.1446,
+   "raw_real": 0.1459,
+   "cer_synth": 0.0136,
+   "raw_synth": 0.1573,
+   "term_hit": 0.9028,
+   "clean_ok": 4,
+   "clean_total": 4,
+   "lat_median": 6656,
+   "lat_max": 8825,
+   "fails": 0
+  },
+  {
+   "id": "Qwen/Qwen3.8-27B",
+   "price": "3 / 12",
+   "cer": 0.1482,
+   "raw_cer": 0.1315,
+   "cer_real": 0.134,
+   "raw_real": 0.1459,
+   "cer_synth": 0.0705,
+   "raw_synth": 0.1573,
+   "term_hit": 0.875,
+   "clean_ok": 2,
+   "clean_total": 4,
+   "lat_median": 1584,
+   "lat_max": 2160,
+   "fails": 3
+  }
+ ],
+ "asr": [
+  {
+   "id": "Qwen/Qwen3-ASR-1.7B",
+   "ms_mean": 900,
+   "raw_cer": 0.0968
+  },
+  {
+   "id": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "ms_mean": 1424,
+   "raw_cer": 0.1982
+  },
+  {
+   "id": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "ms_mean": 3228,
+   "raw_cer": 0.1428
+  }
+ ],
+ "combos": [
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "Qwen/Qwen3.5-35B-A3B",
+   "cer": 0.108,
+   "est_ms": 3968
+  },
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "Qwen/Qwen3.5-122B-A10B",
+   "cer": 0.108,
+   "est_ms": 2579
+  },
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+   "cer": 0.0714,
+   "est_ms": 2640
+  },
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "zai-org/GLM-5.3-Flash",
+   "cer": 0.0724,
+   "est_ms": 14906
+  },
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "stepfun-ai/Step-3.5-Flash",
+   "cer": 0.5592,
+   "est_ms": 12005
+  },
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "cer": 0.0592,
+   "est_ms": 2187
+  },
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "deepseek-ai/DeepSeek-V3.2",
+   "cer": 0.108,
+   "est_ms": 7556
+  },
+  {
+   "asr": "Qwen/Qwen3-ASR-1.7B",
+   "corrector": "Qwen/Qwen3.8-27B",
+   "cer": 0.0592,
+   "est_ms": 2484
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "Qwen/Qwen3.5-35B-A3B",
+   "cer": 0.2104,
+   "est_ms": 4492
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "Qwen/Qwen3.5-122B-A10B",
+   "cer": 0.2226,
+   "est_ms": 3103
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+   "cer": 0.2226,
+   "est_ms": 3164
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "zai-org/GLM-5.3-Flash",
+   "cer": 0.6184,
+   "est_ms": 15430
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "stepfun-ai/Step-3.5-Flash",
+   "cer": 0.1982,
+   "est_ms": 12529
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "cer": 0.1982,
+   "est_ms": 2711
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "deepseek-ai/DeepSeek-V3.2",
+   "cer": 0.1916,
+   "est_ms": 8080
+  },
+  {
+   "asr": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "corrector": "Qwen/Qwen3.8-27B",
+   "cer": 0.1982,
+   "est_ms": 3008
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "Qwen/Qwen3.5-35B-A3B",
+   "cer": 0.154,
+   "est_ms": 6296
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "Qwen/Qwen3.5-122B-A10B",
+   "cer": 0.0987,
+   "est_ms": 4907
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+   "cer": 0.1297,
+   "est_ms": 4968
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "zai-org/GLM-5.3-Flash",
+   "cer": 0.0921,
+   "est_ms": 17234
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "stepfun-ai/Step-3.5-Flash",
+   "cer": 1.0,
+   "est_ms": 14333
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "deepseek-ai/DeepSeek-V4.1-Flash",
+   "cer": 0.1053,
+   "est_ms": 4515
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "deepseek-ai/DeepSeek-V3.2",
+   "cer": 0.1343,
+   "est_ms": 9884
+  },
+  {
+   "asr": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "corrector": "Qwen/Qwen3.8-27B",
+   "cer": 0.1447,
+   "est_ms": 4812
+  }
+ ],
+ "recommend": "deepseek-ai/DeepSeek-V4.1-Flash"
+}
