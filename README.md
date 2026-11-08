@@ -5,6 +5,9 @@
 macOS 原生语音听写：按一下快捷键说话，再按一下，识别并纠错后的文字直接写进光标处。
 Swift / SwiftUI 编写，不依赖 Xcode，只要 Command Line Tools 就能编译。
 
+<p align="center"><img src="docs/demo/dictate.gif" width="49%"> <img src="docs/demo/ask.gif" width="49%"><br><img src="docs/demo/history.gif" width="49%"> <img src="docs/demo/models.gif" width="49%"></p>
+<p align="center"><sub>以上为界面模拟演示（HTML 动画，非真实录屏），文字与数据均为示例。</sub></p>
+
 ## 特点
 
 - **模型自己选**：识别模型和纠错模型都能在 Settings → Models 里切换。支持硅基流动等 OpenAI 兼容接口，也支持**自建/本机服务**（如你自己的显卡机器上的 ASR、Ollama）。
@@ -46,6 +49,8 @@ MIT，见 [LICENSE](LICENSE)。
 ## English
 
 Speakless is a native macOS dictation app: press a hotkey, speak, press again, and the transcribed, cleaned-up text is typed at your cursor. Written in Swift/SwiftUI; builds with just the Command Line Tools.
+
+<sub>The animations above are simulated UI demos (HTML), not real screen recordings; all text and data are samples.</sub>
 
 **Highlights**
 

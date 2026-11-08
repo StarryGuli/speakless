@@ -1,0 +1,62 @@
+<!doctype html><meta charset=utf-8><title>Speakless demo</title>
+<style>
+:root{--win:#ECECF0;--side:#FAFAFC;--nav:#E7E7EC;--card:#fff;--inner:#F1F1F5;--stroke:rgba(0,0,0,.09);--text:#1B1B1D;--sec:#76767E;--acc:#5B7BF8;--green:#4FB38D;--red:#E5584F}
+*{box-sizing:border-box;margin:0}
+body{width:880px;height:500px;background:linear-gradient(135deg,#c9d3f5,#e6d9f2);font:14px -apple-system,"PingFang SC",sans-serif;color:var(--text);overflow:hidden;position:relative}
+.win{position:absolute;left:40px;top:28px;width:800px;height:444px;background:var(--win);border-radius:12px;box-shadow:0 18px 50px rgba(30,30,80,.28);overflow:hidden}
+.bar{height:34px;background:var(--side);border-bottom:1px solid var(--stroke);display:flex;align-items:center;padding:0 14px;gap:7px;font-size:12px;color:var(--sec)}
+.dot{width:11px;height:11px;border-radius:50%}
+.sim{position:absolute;right:50px;bottom:6px;font-size:10px;color:#6a6a86;opacity:.8}
+.pill{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);height:38px;border-radius:19px;background:#1d1d20;color:#fff;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.3);transition:opacity .2s}
+.wave{display:flex;gap:3px;align-items:center;height:22px}.wave i{width:3px;background:#fff;border-radius:2px}
+.card{background:var(--card);border-radius:10px;border:1px solid var(--stroke);padding:12px 14px}
+.hov{border-color:var(--acc);box-shadow:0 0 6px rgba(91,123,248,.3)}
+.cur{display:inline-block;width:2px;height:16px;background:var(--acc);vertical-align:-3px}
+</style>
+<div class=win id=win><div class=bar><span class=dot style=background:#ff5f57></span><span class=dot style=background:#febc2e></span><span class=dot style=background:#28c840></span><span id=ttl style="margin-left:10px"></span></div><div id=stage style="position:relative;height:410px;overflow:hidden"></div></div>
+<div class=sim>Simulated demo of the UI</div>
+<script>
+const $=s=>document.querySelector(s),clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),ease=x=>x*x*(3-2*x);
+const st=$('#stage'),W=window;
+function typed(s,p){return s.slice(0,Math.floor(clamp(p)*s.length))}
+const scenes={
+dictate:{D:8,ttl:'Notes',draw(t){
+ const raw='今天下午三点开个会，讨论一下那个 api key 放环境变量里面的问题';
+ const out='今天下午三点开会，讨论一下把 API Key 放进环境变量的问题。';
+ const rec=t>0.8&&t<4.2, proc=t>=4.2&&t<5.2, done=t>=5.2;
+ let text=done?typed(out,(t-5.2)/1.4):'';
+ let lvl=i=>rec?(.25+.75*Math.abs(Math.sin(t*9+i*1.3)*Math.sin(t*3.1+i)))*22:3;
+ st.innerHTML=`<div style="padding:28px 60px"><div class=card style="height:250px;font-size:17px;line-height:1.7;padding:22px">会议记录<br>${text}<span class=cur style="opacity:${Math.sin(t*8)>0?1:.1}"></span></div></div>
+ <div style="position:absolute;left:0;right:0;top:300px;text-align:center;font-size:12px;color:var(--sec)">${rec?'识别：'+typed(raw,(t-.8)/3.2):proc?'纠错中…':done?'':'按下快捷键开始说话'}</div>
+ <div class=pill style="opacity:${rec||proc?1:0}">${rec?`<div class=wave>${[0,1,2,3,4,5,6,7,8].map(i=>`<i style="height:${lvl(i)}px"></i>`).join('')}</div>Listening`:'<span style="color:#9db3ff">●</span> Processing'}</div>`}},
+ask:{D:11,ttl:'Notes',draw(t){
+ const q='Qwen3-ASR 是什么模型？',ans='Qwen3-ASR 是阿里通义千问团队推出的语音识别模型系列，1.7B 版本约 17 亿参数，支持中文及多种语言的转写 [1]。';
+ const stat=t<1.5?'Listening':t<3?'Thinking':t<5?'Searching the web: Qwen3-ASR 1.7B':t<6?'Reading the results':'';
+ const bx=clamp((t-.3)/.3);
+ st.innerHTML=`<div style="padding:28px 60px"><div class=card style="height:250px;color:var(--sec);padding:22px">会议记录（未改动）</div></div>
+ <div class=card style="position:absolute;left:170px;top:70px;width:460px;opacity:${bx};box-shadow:0 14px 40px rgba(0,0,0,.2);padding:16px 18px">
+ <div style="font-size:11px;color:var(--green);font-weight:600;margin-bottom:6px">ASK</div>
+ <div style="font-weight:600;margin-bottom:10px">${typed(q,(t-.4)/1)}</div>
+ ${stat?`<div style="color:var(--sec);font-size:13px">${stat}…</div>`:`<div style="line-height:1.65">${typed(ans,(t-6)/3)}</div>${t>9.2?`<div style="margin-top:10px;font-size:12px;color:var(--acc)">[1] huggingface.co/Qwen/Qwen3-ASR-1.7B</div><div style="margin-top:10px;display:flex;gap:8px"><span style="background:var(--acc);color:#fff;border-radius:14px;padding:3px 12px;font-size:12px">Insert at cursor</span><span style="border:1px solid var(--stroke);border-radius:14px;padding:3px 12px;font-size:12px">Copy</span></div>`:''}`}
+ </div>`}},
+history:{D:6,ttl:'Speakless · History',draw(t){
+ const rows=[['今天下午三点开会，讨论一下把 API Key 放进环境变量的问题。','ASR 0.9s · LLM 0.6s','SiliconFlow · Qwen3-ASR-1.7B','online'],
+ ['帮我把这段话翻成英文再润色一下。','ASR 1.1s · LLM 0.8s','SiliconFlow · DeepSeek-V4.1-Flash','online'],
+ ['明天记得把设备上的固件更新到最新版本。','ASR 0.7s · LLM 0.5s','Self-hosted · Qwen3-ASR (load 0s)','local'],
+ ['Ask: Qwen3-ASR 是什么模型？','Search 1.4s · LLM 1.9s','SiliconFlow · DeepSeek-V4.1-Flash','online'],
+ ['这个接口返回的字段名需要统一成驼峰命名。','ASR 0.8s · LLM 0.5s','Self-hosted · Qwen3-ASR (cold load 98s)','local'],
+ ['我们下周二上午九点在三楼会议室碰头。','ASR 0.9s · LLM 0.6s','SiliconFlow · Qwen3-ASR-1.7B','online']];
+ const sy=clamp((t-1)/4)*90, hi=Math.floor(clamp((t-1.5)/4)*5);
+ st.innerHTML=`<div style="padding:16px 28px;transform:translateY(${-sy}px)">${rows.map((r,i)=>`<div class="card ${i==hi?'hov':''}" style="margin-bottom:9px;display:flex;justify-content:space-between;gap:20px"><div style="width:340px;line-height:1.5">${r[0]}</div><div style="text-align:right;font-size:11.5px;line-height:1.55;color:var(--sec)">${r[1]}<br>${r[2]}<br><b style="color:${r[3]=='local'?'var(--green)':'var(--acc)'}">${r[3]}</b></div></div>`).join('')}</div>`}},
+models:{D:9,ttl:'Speakless · Models',draw(t){
+ const on=t>4,hov=t<2?0:t<4?1:2;
+ const pc=(n,s,i)=>`<div class="card ${hov==i?'hov':''}" style="width:240px"><b>${n}</b><div style="color:var(--sec);font-size:12px;margin-top:4px">${s}</div></div>`;
+ const k=clamp((t-4)/.4);
+ st.innerHTML=`<div style="padding:22px 30px"><div style="font-size:12px;color:var(--sec);margin-bottom:8px">PLATFORMS</div><div style="display:flex;gap:12px">${pc('SiliconFlow','OpenAI-compatible · API key',0)}${pc('Self-hosted ASR','No key · your own GPU',1)}${pc('Ollama','No key · local models',2)}</div>
+ <div class="card ${t>=2&&t<4?'':''}" style="margin-top:18px"><div style="display:flex;justify-content:space-between"><b>Status &amp; warm-up</b><div style="width:38px;height:22px;border-radius:11px;background:${on?'var(--acc)':'#c9c9d1'};position:relative"><i style="position:absolute;top:2px;left:${on?18:2}px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s"></i></div></div>
+ <div style="color:var(--sec);font-size:12px;margin:6px 0 ${k*10}px">Non-standard option. Turn on only if your server exposes a status and a warm-up endpoint.</div>
+ <div style="opacity:${k};max-height:${k*80}px;overflow:hidden;display:flex;gap:12px"><div style="flex:1"><div style="font-size:11px;color:var(--sec)">Status path</div><div style="background:var(--inner);border-radius:8px;padding:6px 10px;margin-top:3px">/health</div></div><div style="flex:1"><div style="font-size:11px;color:var(--sec)">Warm-up path</div><div style="background:var(--inner);border-radius:8px;padding:6px 10px;margin-top:3px">/warmup</div></div></div></div></div>`}}
+};
+W.seek=(name,t)=>{const s=scenes[name];$('#ttl').textContent=s.ttl;s.draw(t)};
+W.dur=n=>scenes[n].D;
+</script>
