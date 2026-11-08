@@ -1,9 +1,15 @@
-# Speakless
+<p align="center"><img src="assets/readme/hero.zh-CN.svg" width="100%" alt="Speakless：按一下，说话，干净的文字落在光标处"></p>
 
-[English](README.md) · **简体中文**
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-3B5BF5?style=flat&labelColor=2b2b2e" alt="license MIT"> <img src="https://img.shields.io/badge/macOS-13+-2E9C74?style=flat&labelColor=2b2b2e&logo=apple&logoColor=white" alt="macOS 13+"> <img src="https://img.shields.io/badge/Apple%20Silicon-arm64-2E9C74?style=flat&labelColor=2b2b2e" alt="Apple Silicon arm64"> <img src="https://img.shields.io/badge/Swift-5.9-F05138?style=flat&labelColor=2b2b2e&logo=swift&logoColor=white" alt="Swift 5.9"> <img src="https://img.shields.io/badge/UI-SwiftUI-3B5BF5?style=flat&labelColor=2b2b2e" alt="UI SwiftUI"> <img src="https://img.shields.io/badge/models-bring%20your%20own-3B5BF5?style=flat&labelColor=2b2b2e" alt="models bring your own"> <img src="https://img.shields.io/badge/version-0.1.0-6E6D72?style=flat&labelColor=2b2b2e" alt="version 0.1.0"> <img src="https://img.shields.io/badge/status-early-E09F3E?style=flat&labelColor=2b2b2e" alt="status early"></p>
 
-<p align="center"><img src="docs/demo/dictate.gif" width="49%"> <img src="docs/demo/ask.gif" width="49%"><br><img src="docs/demo/history.gif" width="49%"> <img src="docs/demo/models.gif" width="49%"></p>
+<p align="center"><a href="README.md">English</a> · <b>简体中文</b> &nbsp;|&nbsp; <a href="#安装">安装</a> · <a href="#工作原理">工作原理</a> · <a href="#测试结果">测试结果</a> · <a href="docs/ARCHITECTURE.md">文档</a></p>
+
+<p align="center"><img src="docs/demo/dictate.gif" width="49%" alt="听写：录音条与文字落在光标处"> <img src="docs/demo/ask.gif" width="49%" alt="Ask Anything 问答框，带联网搜索与引用"><br><img src="docs/demo/history.gif" width="49%" alt="历史记录：各阶段耗时、服务商与模型"> <img src="docs/demo/models.gif" width="49%" alt="模型页：平台与"状态与预热"选项"></p>
 <p align="center"><sub>界面模拟演示（HTML 动画，非真实录屏），文字与数据均为示例。</sub></p>
+
+## 工作原理
+
+<p align="center"><img src="assets/readme/pipeline.zh-CN.svg" width="100%" alt="录音、识别、结合上下文和术语表整理、写入光标处"></p>
 
 ## 特点
 
@@ -62,14 +68,7 @@ cd speakless/app
 
 各语音识别模型离 Typeless 的输出有多近？用作者自己 Typeless 库里的 60 条真实录音（共 868 秒），参照是 Typeless 自己的整理结果，所以数字越低表示**越像 Typeless**（字错率）。样本小，差距小于约 2 个点可视为噪声。
 
-| 识别模型 | 原始 | 整理后 |
-|---|---|---|
-| `Qwen/Qwen3-ASR-1.7B` (SiliconFlow, current default) | 25.4% | 22.7% |
-| `microsoft/mai-transcribe-1.5` | 23.1% | 20.3% |
-| `fish-audio/transcribe-1` | 25.6% | 21.1% |
-| `microsoft/mai-transcribe-2` | 23.7% | 21.5% |
-| `qwen/qwen3-asr-0.6b` | 26.6% | 22.8% |
-| `elevenlabs/scribe-v2` | 29.3% | 23.6% |
+<p align="center"><img src="assets/readme/bench.zh-CN.svg" width="100%" alt="各识别模型与 Typeless 输出的接近程度（柱状图）"></p>
 
 结论：当前默认已在最好的几个之列；换 ASR 只能多拿约 2 个点；剩下的差距主要是 Typeless 的改写风格，不是识别。把提示词调向"多改写"没有收益。完整表格、方法、局限和脚本见 [docs/BENCHMARKS.zh-CN.md](docs/BENCHMARKS.zh-CN.md)。录音和转写原文均不公开。
 

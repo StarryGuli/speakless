@@ -1,11 +1,17 @@
-# Speakless
+<p align="center"><img src="assets/readme/hero.svg" width="100%" alt="Speakless: press a key, speak, clean text lands at your cursor"></p>
 
-**English** · [简体中文](README.zh-CN.md)
+<p align="center"><img src="https://img.shields.io/badge/license-MIT-3B5BF5?style=flat&labelColor=2b2b2e" alt="license MIT"> <img src="https://img.shields.io/badge/macOS-13+-2E9C74?style=flat&labelColor=2b2b2e&logo=apple&logoColor=white" alt="macOS 13+"> <img src="https://img.shields.io/badge/Apple%20Silicon-arm64-2E9C74?style=flat&labelColor=2b2b2e" alt="Apple Silicon arm64"> <img src="https://img.shields.io/badge/Swift-5.9-F05138?style=flat&labelColor=2b2b2e&logo=swift&logoColor=white" alt="Swift 5.9"> <img src="https://img.shields.io/badge/UI-SwiftUI-3B5BF5?style=flat&labelColor=2b2b2e" alt="UI SwiftUI"> <img src="https://img.shields.io/badge/models-bring%20your%20own-3B5BF5?style=flat&labelColor=2b2b2e" alt="models bring your own"> <img src="https://img.shields.io/badge/version-0.1.0-6E6D72?style=flat&labelColor=2b2b2e" alt="version 0.1.0"> <img src="https://img.shields.io/badge/status-early-E09F3E?style=flat&labelColor=2b2b2e" alt="status early"></p>
 
-<p align="center"><img src="docs/demo/dictate.gif" width="49%"> <img src="docs/demo/ask.gif" width="49%"><br><img src="docs/demo/history.gif" width="49%"> <img src="docs/demo/models.gif" width="49%"></p>
+<p align="center"><b>English</b> · <a href="README.zh-CN.md">简体中文</a> &nbsp;|&nbsp; <a href="#install">Install</a> · <a href="#how-it-works">How it works</a> · <a href="#benchmarks">Benchmarks</a> · <a href="docs/ARCHITECTURE.md">Docs</a></p>
+
+<p align="center"><img src="docs/demo/dictate.gif" width="49%" alt="Dictation: recording pill and text landing at the cursor"> <img src="docs/demo/ask.gif" width="49%" alt="Ask Anything answer box with web search and citation"><br><img src="docs/demo/history.gif" width="49%" alt="History with per-stage timings, provider and model"> <img src="docs/demo/models.gif" width="49%" alt="Models page with platforms and status and warm-up option"></p>
 <p align="center"><sub>Simulated UI demos (HTML animations, not real screen recordings); all text and data are samples.</sub></p>
 
 Speakless is a native macOS dictation app: press a hotkey, speak, press again, and the transcribed, cleaned-up text is typed at your cursor. Written in Swift/SwiftUI; builds with just the Command Line Tools.
+
+## How it works
+
+<p align="center"><img src="assets/readme/pipeline.svg" width="100%" alt="Record, recognize, clean up with context and glossary, write at the cursor"></p>
 
 ## Features
 
@@ -64,14 +70,7 @@ Cleanup and Ask can include: front app and window title, page title and URL, inp
 
 How close is each speech-recognition model to Typeless's output? 60 real recordings (868 s) from the author's own Typeless library; the reference is Typeless's own refined text, so lower means *more similar to Typeless* (character error rate). Small sample: differences under ~2 points are noise.
 
-| ASR model | Raw | After cleanup |
-|---|---|---|
-| `Qwen/Qwen3-ASR-1.7B` (SiliconFlow, current default) | 25.4% | 22.7% |
-| `microsoft/mai-transcribe-1.5` | 23.1% | 20.3% |
-| `fish-audio/transcribe-1` | 25.6% | 21.1% |
-| `microsoft/mai-transcribe-2` | 23.7% | 21.5% |
-| `qwen/qwen3-asr-0.6b` | 26.6% | 22.8% |
-| `elevenlabs/scribe-v2` | 29.3% | 23.6% |
+<p align="center"><img src="assets/readme/bench.svg" width="100%" alt="Bar chart: closeness to Typeless output per ASR model"></p>
 
 Takeaways: the current default is already among the best; switching ASR gains only ~2 points; most of the remaining gap is Typeless's rewriting style, not recognition. Prompt tuning toward more rewriting did not help. Full tables, method, caveats and scripts: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). Recordings and transcripts are not published.
 
