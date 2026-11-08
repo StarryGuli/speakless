@@ -21,7 +21,7 @@ Swift / SwiftUI 编写，不依赖 Xcode，只要 Command Line Tools 就能编�
 ## 安装
 
 **方式一：下载安装包**（推荐）。到 [Releases](../../releases) 下载 `Speakless-x.y.z-macos.zip`，解压后拖进「应用程序」。
-安装包尚未经苹果公证，第一次打开会被系统拦下：在「应用程序」里**右键 → 打开 → 仍要打开**；或终端执行 `xattr -dr com.apple.quarantine /Applications/Speakless.app`。系统要求 macOS 13 及以上，Apple Silicon 与 Intel 均可（以发布说明为准）。
+安装包尚未经苹果公证，第一次打开会被系统拦下：在「应用程序」里**右键 → 打开 → 仍要打开**；或终端执行 `xattr -dr com.apple.quarantine /Applications/Speakless.app`。系统要求 macOS 13 及以上；当前安装包仅含 Apple Silicon（arm64），Intel Mac 请自己编译。
 
 **方式二：自己编译**（只需 Command Line Tools，不需要完整 Xcode）
 
@@ -117,7 +117,7 @@ Speakless is a native macOS dictation app: press a hotkey, speak, press again, a
 - **History with timings.** Per-stage latency, provider, model and local/online for every dictation.
 - Personal dictionary, auto-learning from your edits, custom hotkeys.
 
-**Install.** Download `Speakless-x.y.z-macos.zip` from [Releases](../../releases), unzip, move to Applications. The build is not notarized yet: right-click → Open the first time (or `xattr -dr com.apple.quarantine /Applications/Speakless.app`). Requires macOS 13+. Or build from source (Command Line Tools only):
+**Install.** Download `Speakless-x.y.z-macos.zip` from [Releases](../../releases), unzip, move to Applications. The build is not notarized yet: right-click → Open the first time (or `xattr -dr com.apple.quarantine /Applications/Speakless.app`). Requires macOS 13+; the prebuilt package is Apple Silicon (arm64) only — Intel Macs should build from source. Or build from source (Command Line Tools only):
 
 ```bash
 git clone https://github.com/StarryGuli/speakless.git
