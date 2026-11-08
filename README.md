@@ -60,6 +60,21 @@ cd speakless/app
 
 Cleanup and Ask can include: front app and window title, page title and URL, input field type, selected text, text before/after the cursor, and visible screen text. All items are on by default, each can be turned off, and apps can be blocked. The prompt tells the model to treat context as reference only and never copy it into the output.
 
+## Benchmarks
+
+How close is each speech-recognition model to Typeless's output? 60 real recordings (868 s) from the author's own Typeless library; the reference is Typeless's own refined text, so lower means *more similar to Typeless* (character error rate). Small sample: differences under ~2 points are noise.
+
+| ASR model | Raw | After cleanup |
+|---|---|---|
+| `Qwen/Qwen3-ASR-1.7B` (SiliconFlow, current default) | 25.4% | 22.7% |
+| `microsoft/mai-transcribe-1.5` | 23.1% | 20.3% |
+| `fish-audio/transcribe-1` | 25.6% | 21.1% |
+| `microsoft/mai-transcribe-2` | 23.7% | 21.5% |
+| `qwen/qwen3-asr-0.6b` | 26.6% | 22.8% |
+| `elevenlabs/scribe-v2` | 29.3% | 23.6% |
+
+Takeaways: the current default is already among the best; switching ASR gains only ~2 points; most of the remaining gap is Typeless's rewriting style, not recognition. Prompt tuning toward more rewriting did not help. Full tables, method, caveats and scripts: [docs/BENCHMARKS.md](docs/BENCHMARKS.md). Recordings and transcripts are not published.
+
 ## Project layout
 
 ```

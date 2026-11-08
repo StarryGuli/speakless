@@ -58,6 +58,21 @@ cd speakless/app
 
 纠错和提问时可附带下列信息，全部默认开启、可逐项关闭，也可设置"不读取的 App"：当前 App 与窗口标题、网页标题与地址、输入框类型、选中文字、光标前后文、屏幕可见文字。上下文只作参考，提示词要求模型不得把它写进输出。
 
+## 测试结果
+
+各语音识别模型离 Typeless 的输出有多近？用作者自己 Typeless 库里的 60 条真实录音（共 868 秒），参照是 Typeless 自己的整理结果，所以数字越低表示**越像 Typeless**（字错率）。样本小，差距小于约 2 个点可视为噪声。
+
+| 识别模型 | 原始 | 整理后 |
+|---|---|---|
+| `Qwen/Qwen3-ASR-1.7B` (SiliconFlow, current default) | 25.4% | 22.7% |
+| `microsoft/mai-transcribe-1.5` | 23.1% | 20.3% |
+| `fish-audio/transcribe-1` | 25.6% | 21.1% |
+| `microsoft/mai-transcribe-2` | 23.7% | 21.5% |
+| `qwen/qwen3-asr-0.6b` | 26.6% | 22.8% |
+| `elevenlabs/scribe-v2` | 29.3% | 23.6% |
+
+结论：当前默认已在最好的几个之列；换 ASR 只能多拿约 2 个点；剩下的差距主要是 Typeless 的改写风格，不是识别。把提示词调向"多改写"没有收益。完整表格、方法、局限和脚本见 [docs/BENCHMARKS.zh-CN.md](docs/BENCHMARKS.zh-CN.md)。录音和转写原文均不公开。
+
 ## 项目结构
 
 ```

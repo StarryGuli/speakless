@@ -1,0 +1,26 @@
+{
+ "samples": 60,
+ "rows": [
+  {
+   "model": "Qwen/Qwen3-ASR-1.7B",
+   "cer_raw": 0.2544,
+   "cer_out": 0.2274,
+   "asr_ms_median": 3209.5,
+   "fails": 0
+  },
+  {
+   "model": "XingChenAGI/XingChenASR-V3.2-Ultra",
+   "cer_raw": 0.3242,
+   "cer_out": 0.3084,
+   "asr_ms_median": 5499.0,
+   "fails": 0
+  },
+  {
+   "model": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+   "cer_raw": 0.2884,
+   "cer_out": 0.2493,
+   "asr_ms_median": 6943.5,
+   "fails": 2
+  }
+ ]
+}

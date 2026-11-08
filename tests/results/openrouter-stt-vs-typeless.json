@@ -1,0 +1,296 @@
+{
+ "generated": "2026-11-08 16:23",
+ "samples": 60,
+ "seconds": 868,
+ "note": "reference = Typeless refined text; only aggregates are published",
+ "rows": [
+  {
+   "model": "qwen/qwen3-asr-0.6b",
+   "hint": false,
+   "cer_raw": 0.2659,
+   "cer_out": 0.2275,
+   "ms": 2734.5,
+   "cost": 0.0029,
+   "fails": 0
+  },
+  {
+   "model": "qwen/qwen3-asr-0.6b",
+   "hint": true,
+   "cer_raw": 0.2712,
+   "cer_out": 0.2585,
+   "ms": 2884.5,
+   "cost": 0.0029,
+   "fails": 0
+  },
+  {
+   "model": "openai/gpt-transcribe",
+   "hint": false,
+   "cer_raw": 0.285,
+   "cer_out": 0.2641,
+   "ms": 2676.0,
+   "cost": 0.0674,
+   "fails": 0
+  },
+  {
+   "model": "openai/gpt-transcribe",
+   "hint": true,
+   "cer_raw": 0.2702,
+   "cer_out": 0.2476,
+   "ms": 2730.0,
+   "cost": 0.0674,
+   "fails": 0
+  },
+  {
+   "model": "fish-audio/transcribe-1",
+   "hint": false,
+   "cer_raw": 0.2557,
+   "cer_out": 0.2115,
+   "ms": 3861.5,
+   "cost": 0.0898,
+   "fails": 0
+  },
+  {
+   "model": "fish-audio/transcribe-1",
+   "hint": true,
+   "cer_raw": 0.2557,
+   "cer_out": 0.211,
+   "ms": 3407.0,
+   "cost": 0.0898,
+   "fails": 0
+  },
+  {
+   "model": "x-ai/grok-stt-1.0",
+   "hint": false,
+   "cer_raw": 0.3419,
+   "cer_out": 0.3203,
+   "ms": 2825.5,
+   "cost": 0.0241,
+   "fails": 0
+  },
+  {
+   "model": "x-ai/grok-stt-1.0",
+   "hint": true,
+   "cer_raw": 0.3475,
+   "cer_out": 0.3165,
+   "ms": 2565.5,
+   "cost": 0.0241,
+   "fails": 0
+  },
+  {
+   "model": "deepgram/nova-3",
+   "hint": false,
+   "cer_raw": 1.0598,
+   "cer_out": 1.0566,
+   "ms": 2130.5,
+   "cost": 0.0622,
+   "fails": 0
+  },
+  {
+   "model": "deepgram/nova-3",
+   "hint": true,
+   "cer_raw": 0.3367,
+   "cer_out": 0.3062,
+   "ms": 2729.0,
+   "cost": 0.0622,
+   "fails": 0
+  },
+  {
+   "model": "microsoft/mai-transcribe-1.5",
+   "hint": false,
+   "cer_raw": 0.2272,
+   "cer_out": 0.2063,
+   "ms": 3457.5,
+   "cost": 0.0898,
+   "fails": 0
+  },
+  {
+   "model": "microsoft/mai-transcribe-1.5",
+   "hint": true,
+   "cer_raw": 0.2307,
+   "cer_out": 0.2031,
+   "ms": 3348.0,
+   "cost": 0.0898,
+   "fails": 0
+  },
+  {
+   "model": "nvidia/parakeet-tdt-0.6b-v3",
+   "hint": false,
+   "cer_raw": 1.3384,
+   "cer_out": 1.3436,
+   "ms": 2727.0,
+   "cost": 0.0166,
+   "fails": 0
+  },
+  {
+   "model": "nvidia/parakeet-tdt-0.6b-v3",
+   "hint": true,
+   "cer_raw": 1.3628,
+   "cer_out": 1.507,
+   "ms": 2542.5,
+   "cost": 0.0169,
+   "fails": 0
+  },
+  {
+   "model": "mistralai/voxtral-mini-transcribe",
+   "hint": false,
+   "cer_raw": 0.3304,
+   "cer_out": 0.2368,
+   "ms": 2903.5,
+   "cost": 0.042,
+   "fails": 0
+  },
+  {
+   "model": "mistralai/voxtral-mini-transcribe",
+   "hint": true,
+   "cer_raw": 0.3309,
+   "cer_out": 0.2647,
+   "ms": 2785.5,
+   "cost": 0.042,
+   "fails": 0
+  },
+  {
+   "model": "google/chirp-3",
+   "hint": false,
+   "cer_raw": 0.3145,
+   "cer_out": 0.2996,
+   "ms": 4642.5,
+   "cost": 0.2395,
+   "fails": 0
+  },
+  {
+   "model": "google/chirp-3",
+   "hint": true,
+   "cer_raw": 0.3088,
+   "cer_out": 0.269,
+   "ms": 4255.0,
+   "cost": 0.2395,
+   "fails": 0
+  },
+  {
+   "model": "openai/gpt-4o-mini-transcribe",
+   "hint": false,
+   "cer_raw": 0.2865,
+   "cer_out": 0.2675,
+   "ms": 2906.0,
+   "cost": 0.0245,
+   "fails": 0
+  },
+  {
+   "model": "openai/gpt-4o-mini-transcribe",
+   "hint": true,
+   "cer_raw": 0.2894,
+   "cer_out": 0.2454,
+   "ms": 2860.5,
+   "cost": 0.0247,
+   "fails": 0
+  },
+  {
+   "model": "openai/gpt-4o-transcribe",
+   "hint": false,
+   "cer_raw": 0.394,
+   "cer_out": 0.3923,
+   "ms": 3162.5,
+   "cost": 0.0425,
+   "fails": 0
+  },
+  {
+   "model": "openai/gpt-4o-transcribe",
+   "hint": true,
+   "cer_raw": 0.3877,
+   "cer_out": 0.3886,
+   "ms": 3145.0,
+   "cost": 0.0428,
+   "fails": 0
+  },
+  {
+   "model": "openai/whisper-large-v3-turbo",
+   "hint": false,
+   "cer_raw": 0.5646,
+   "cer_out": 0.4918,
+   "ms": 3889.5,
+   "cost": 0.0036,
+   "fails": 0
+  },
+  {
+   "model": "openai/whisper-large-v3-turbo",
+   "hint": true,
+   "cer_raw": 0.4022,
+   "cer_out": 0.3636,
+   "ms": 3872.0,
+   "cost": 0.0035,
+   "fails": 0
+  },
+  {
+   "model": "openai/whisper-large-v3",
+   "hint": false,
+   "cer_raw": 0.4322,
+   "cer_out": 0.313,
+   "ms": 4064.0,
+   "cost": 0.0073,
+   "fails": 0
+  },
+  {
+   "model": "openai/whisper-large-v3",
+   "hint": true,
+   "cer_raw": 0.4275,
+   "cer_out": 0.319,
+   "ms": 3679.5,
+   "cost": 0.0103,
+   "fails": 0
+  },
+  {
+   "model": "openai/whisper-1",
+   "hint": false,
+   "cer_raw": 0.3496,
+   "cer_out": 0.2638,
+   "ms": 4054.5,
+   "cost": 0.0897,
+   "fails": 0
+  },
+  {
+   "model": "openai/whisper-1",
+   "hint": true,
+   "cer_raw": 0.3494,
+   "cer_out": 0.2641,
+   "ms": 3730.0,
+   "cost": 0.0897,
+   "fails": 0
+  },
+  {
+   "model": "microsoft/mai-transcribe-2",
+   "hint": false,
+   "cer_raw": 0.2603,
+   "cer_out": 0.2373,
+   "ms": 2500.5,
+   "cost": 0.0243,
+   "fails": 2
+  },
+  {
+   "model": "microsoft/mai-transcribe-2",
+   "hint": true,
+   "cer_raw": 0.2366,
+   "cer_out": 0.2154,
+   "ms": 2502.0,
+   "cost": 0.0249,
+   "fails": 0
+  },
+  {
+   "model": "elevenlabs/scribe-v2",
+   "hint": false,
+   "cer_raw": 0.2907,
+   "cer_out": 0.2405,
+   "ms": 2797.5,
+   "cost": 0.053,
+   "fails": 0
+  },
+  {
+   "model": "elevenlabs/scribe-v2",
+   "hint": true,
+   "cer_raw": 0.2935,
+   "cer_out": 0.2361,
+   "ms": 2801.0,
+   "cost": 0.053,
+   "fails": 0
+  }
+ ]
+}
