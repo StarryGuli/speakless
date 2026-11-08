@@ -1,14 +1,105 @@
 # Speakless
 
-**中文** · [English](#english)
-
-macOS 原生语音听写：按一下快捷键说话，再按一下，识别并纠错后的文字直接写进光标处。
-Swift / SwiftUI 编写，不依赖 Xcode，只要 Command Line Tools 就能编译。
+[English](#english) · [中文](#中文)
 
 <p align="center"><img src="docs/demo/dictate.gif" width="49%"> <img src="docs/demo/ask.gif" width="49%"><br><img src="docs/demo/history.gif" width="49%"> <img src="docs/demo/models.gif" width="49%"></p>
-<p align="center"><sub>以上为界面模拟演示（HTML 动画，非真实录屏），文字与数据均为示例。</sub></p>
+<p align="center"><sub>Simulated UI demos (HTML animations, not real screen recordings); all text and data are samples.</sub></p>
 
-## 特点
+## English
+
+Speakless is a native macOS dictation app: press a hotkey, speak, press again, and the transcribed, cleaned-up text is typed at your cursor. Written in Swift/SwiftUI; builds with just the Command Line Tools.
+
+### Features
+
+- **Bring your own models.** Swap ASR and cleanup models in Settings → Models. Works with OpenAI-compatible APIs such as SiliconFlow, and with self-hosted or local servers.
+- **Friendly to local models.** An opt-in "status & warm-up" option asks your own server to load its model as soon as you start recording; streaming segments make text appear right after you stop. The endpoint is non-standard, so it is off by default.
+- **Chinese-first.** Prompts and glossary are tuned for Chinese and mixed Chinese/English dictation; a small reproducible benchmark lives in `tests/siliconflow/`.
+- **Context-aware.** Optionally reads the front app, window title, page URL, selected text and text around the cursor. Every item can be switched off, and specific apps can be blocked.
+- **Ask Anything.** A second hotkey asks a question and shows the answer in a floating box instead of editing your text, with optional web search and citations. Press the ask key mid-recording to switch modes.
+- **History with timings.** Per-stage latency, provider, model and local/online for every dictation.
+- Personal dictionary, auto-learning from your edits, custom hotkeys.
+
+### Install
+
+Download `Speakless-x.y.z-macos-arm64.zip` from [Releases](../../releases), unzip, and move it to Applications. Requires macOS 13+; the prebuilt package is Apple Silicon (arm64) only, so Intel Macs should build from source.
+The build is not notarized yet: the first time, right-click → Open (or run `xattr -dr com.apple.quarantine /Applications/Speakless.app`).
+
+Or build from source (Command Line Tools only, no full Xcode):
+
+```bash
+git clone https://github.com/StarryGuli/speakless.git
+cd speakless/app
+./build.sh --install
+```
+
+### Quick start
+
+1. Settings → Models: pick a platform and paste your own API key (stored locally), then Test connection. To use your own server, add a no-key platform with its base URL.
+2. On Home → Setup, grant Microphone, Input Monitoring and Accessibility.
+3. If you use Fn as the hotkey: System Settings → Keyboard → "Press 🌐 key to" → Do nothing.
+4. In any text field press the hotkey to start, press again to finish; the text lands at the cursor.
+
+### Usage
+
+| To… | Do this |
+|---|---|
+| Dictate | Default Fn (Settings → Shortcuts: a single modifier or a 2–3 key combo) |
+| Ask a question | Default Fn+Space. The answer shows in a floating box and does not touch your text; "Insert at cursor" is optional |
+| Switch a dictation into a question | Press the ask key while recording |
+| Add terms | Add them in Dictionary; words you correct after dictating are learned automatically |
+| See timings | History shows per-stage time, provider, model and local/online on the right of each entry |
+
+### Providers and models
+
+| Type | Notes |
+|---|---|
+| SiliconFlow | Default online platform. Defaults: Qwen3-ASR-1.7B for ASR, DeepSeek-V4.1-Flash for cleanup (changeable) |
+| Other OpenAI-compatible services | Base URL + key |
+| Self-hosted ASR / Ollama | No key; treated as a local model, with keep-alive and load-allowance settings |
+| Status & warm-up (optional) | Turn on only if your server exposes endpoints like `/health` and `/warmup`; it loads the model while you start speaking. Non-standard, off by default |
+
+### Context
+
+Cleanup and Ask can include: front app and window title, page title and URL, input field type, selected text, text before/after the cursor, and visible screen text. All items are on by default, each can be turned off, and apps can be blocked. The prompt tells the model to treat context as reference only and never copy it into the output.
+
+### Project layout
+
+```
+app/Sources/Speakless/   app source (SwiftUI + AppKit)
+app/build.sh             builds the .app bundle
+tests/siliconflow/       model benchmark scripts and a results summary
+docs/                    architecture, development notes, changelog, demo animations
+```
+
+See [Architecture](docs/ARCHITECTURE.md), [Development](docs/DEVELOPMENT.md), [Contributing](CONTRIBUTING.md) and the [Changelog](docs/CHANGELOG.md).
+
+### FAQ
+
+- **Fn opens the emoji picker** – see Quick start step 3.
+- **Permissions reset after each rebuild** – sign with a local self-signed certificate named "Speakless Local Signing" (see DEVELOPMENT.md).
+- **⌘+Space does nothing** – that is Spotlight's shortcut; choose another combo for Ask.
+- **First transcription on my own server is slow** – the model is cold-loading; enable Status & warm-up so it loads as soon as you start speaking.
+
+### Roadmap (planned, no dates)
+
+Per-app output styles, translation mode, edit-selection by voice, hold-to-talk, dictionary import/export, notarized builds.
+
+### Privacy
+
+- No server of our own and no telemetry.
+- Audio and text go only to the recognition and cleanup providers you configure.
+- Context (window title, screen text, …) is sent to your configured provider along with cleanup requests; turn items off in Settings → Context.
+- Web search (Ask Anything) sends the query to Bing / DuckDuckGo.
+
+### Status and license
+
+Early release, tested on macOS only. Issues and PRs welcome. MIT licensed, see [LICENSE](LICENSE).
+
+---
+
+## 中文
+
+### 特点
 
 - **模型自己选**：识别模型和纠错模型都能在 Settings → Models 里切换。支持硅基流动等 OpenAI 兼容接口，也支持**自建/本机服务**（如你自己的显卡机器上的 ASR、Ollama）。
 - **本机模型友好**：可选的"状态与预热"接口，开始录音时就让自建服务提前加载模型；边说边识别（流式分段），说完即出字。该接口是非标准的，默认关闭，仅在你自己的服务支持时手动打开。
@@ -18,7 +109,7 @@ Swift / SwiftUI 编写，不依赖 Xcode，只要 Command Line Tools 就能编�
 - **历史与耗时**：每条记录显示各阶段耗时、使用的服务商与模型、本地或在线。
 - 个人词典、自动学习你的改词、全局快捷键（可自定义组合键）。
 
-## 安装
+### 安装
 
 **方式一：下载安装包**（推荐）。到 [Releases](../../releases) 下载 `Speakless-x.y.z-macos.zip`，解压后拖进「应用程序」。
 安装包尚未经苹果公证，第一次打开会被系统拦下：在「应用程序」里**右键 → 打开 → 仍要打开**；或终端执行 `xattr -dr com.apple.quarantine /Applications/Speakless.app`。系统要求 macOS 13 及以上；当前安装包仅含 Apple Silicon（arm64），Intel Mac 请自己编译。
@@ -31,14 +122,14 @@ cd speakless/app
 ./build.sh --install     # 编译并装进 /Applications
 ```
 
-## 5 分钟上手
+### 5 分钟上手
 
 1. 打开 Speakless → **Settings → Models**，选一个平台并填入你自己的 API key（密钥只存本机），点 Test connection。想用自己的服务：新增一个"无需密钥"的平台，填 base URL 即可。
 2. 首页右侧 **Setup** 依次授权：麦克风、输入监控、辅助功能。
 3. 若用 Fn 当快捷键：系统设置 → 键盘 →「按 🌐 键时」改成「不执行任何操作」。
 4. 在任意输入框里**按一下快捷键说话，再按一下结束**，文字会写到光标处。
 
-## 用法
+### 用法
 
 | 想做的事 | 怎么做 |
 |---|---|
@@ -48,7 +139,7 @@ cd speakless/app
 | 加专有名词 | Dictionary 里手动加；你在听写后改的词会被自动学习 |
 | 看每次耗时 | History：每条记录右侧是各阶段耗时、服务商、模型、本地/在线 |
 
-## 平台与模型
+### 平台与模型
 
 | 类型 | 说明 |
 |---|---|
@@ -57,11 +148,11 @@ cd speakless/app
 | 自建 ASR / Ollama | 无需 key，视为"本地模型"，可设保活时间与加载容忍时间 |
 | 状态与预热（可选） | 仅当你的服务提供类似 `/health` 与 `/warmup` 的接口时才打开：开始录音就提前让它加载模型。非标准接口，默认关闭 |
 
-## 上下文
+### 上下文
 
 纠错和提问时可附带下列信息，全部默认开启、可逐项关闭，也可设置"不读取的 App"：当前 App 与窗口标题、网页标题与地址、输入框类型、选中文字、光标前后文、屏幕可见文字。上下文只作参考，提示词要求模型不得把它写进输出。
 
-## 项目结构
+### 项目结构
 
 ```
 app/Sources/Speakless/   应用源码（SwiftUI + AppKit）
@@ -72,7 +163,7 @@ docs/                    架构、开发说明、更新日志、演示动图
 
 详见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 和 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)；贡献方式见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-## 常见问题
+### 常见问题
 
 - **按 Fn 弹出表情面板**：见上手第 3 步。
 - **每次重新编译后权限丢了**：用本地自签证书 "Speakless Local Signing" 签名，见 DEVELOPMENT.md。
@@ -80,58 +171,21 @@ docs/                    架构、开发说明、更新日志、演示动图
 - **自建服务第一次识别很慢**：模型冷启动要加载，打开"状态与预热"可在你开口时提前加载。
 - **会不会上传我的数据**：见下方"隐私"。
 
-## 路线图（计划，不承诺时间）
+### 路线图（计划，不承诺时间）
 
 按 App 设定输出风格、翻译模式、选中文字后语音改写、按住说话、词典导入导出、苹果公证的安装包。
 
-## 隐私
+### 隐私
 
 - 项目没有自己的服务器，不收集任何数据。
 - 音频和文字只发送到**你在设置里配置的**识别/纠错服务。
 - 上下文（窗口标题、屏幕文字等）会随纠错请求一起发给你配置的模型服务商；不想发送请在 Settings → Context 里关闭。
 - 联网搜索（Ask Anything）会把检索关键词发送给 Bing / DuckDuckGo。
 
-## 状态
+### 状态
 
 早期版本，仅在 macOS 上测试。欢迎 issue 与 PR。
 
-## 许可
+### 许可
 
 MIT，见 [LICENSE](LICENSE)。
-
----
-
-## English
-
-Speakless is a native macOS dictation app: press a hotkey, speak, press again, and the transcribed, cleaned-up text is typed at your cursor. Written in Swift/SwiftUI; builds with just the Command Line Tools.
-
-<sub>The animations above are simulated UI demos (HTML), not real screen recordings; all text and data are samples.</sub>
-
-**Highlights**
-
-- **Bring your own models.** Swap ASR and cleanup models in Settings → Models. Works with OpenAI-compatible APIs such as SiliconFlow, and with self-hosted or local servers.
-- **Friendly to local models.** An opt-in "status & warm-up" option asks your own server to load its model as soon as you start recording; streaming segments make text appear right after you stop. This endpoint is non-standard, so it is off by default.
-- **Chinese-first.** Prompts and glossary are tuned for Chinese and mixed Chinese/English dictation; a small reproducible benchmark lives in `tests/siliconflow/`.
-- **Context-aware.** Optionally reads the front app, window title, page URL, selected text and text around the cursor. Every item can be switched off, and you can block specific apps.
-- **Ask Anything.** A second hotkey asks a question and shows the answer in a floating box instead of editing your text, with optional web search and citations. Press the ask key mid-recording to switch modes.
-- **History with timings.** Per-stage latency, provider, model and local/online for every dictation.
-- Personal dictionary, auto-learning from your edits, custom hotkeys.
-
-**Install.** Download `Speakless-x.y.z-macos.zip` from [Releases](../../releases), unzip, move to Applications. The build is not notarized yet: right-click → Open the first time (or `xattr -dr com.apple.quarantine /Applications/Speakless.app`). Requires macOS 13+; the prebuilt package is Apple Silicon (arm64) only — Intel Macs should build from source. Or build from source (Command Line Tools only):
-
-```bash
-git clone https://github.com/StarryGuli/speakless.git
-cd speakless/app && ./build.sh --install
-```
-
-**Quick start.** Settings → Models: pick a platform and paste your own API key (stored locally) — or add a no-key platform pointing at your own server. Grant Microphone, Input Monitoring and Accessibility. Press the hotkey (default Fn) to start, press again to finish; text lands at the cursor. Default Ask key is Fn+Space; pressing it during a dictation switches that recording to Ask.
-
-**Context** (all on by default, each can be disabled, apps can be blocked): front app and window title, page title/URL, input type, selected text, text around the cursor, visible screen text. The prompt tells the model never to copy it into the output.
-
-**Docs.** [Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) · [Contributing](CONTRIBUTING.md) · [Changelog](docs/CHANGELOG.md)
-
-**Roadmap (planned, no dates).** Per-app output styles, translation mode, edit-selection by voice, hold-to-talk, dictionary import/export, notarized builds.
-
-**Privacy.** No server of our own, no telemetry. Audio and text go only to the providers you configure. Context is sent along with cleanup requests (toggle it off in Settings → Context). Web search sends the query to Bing / DuckDuckGo.
-
-**Status.** Early release, tested on macOS only. Issues and PRs welcome. MIT licensed.
