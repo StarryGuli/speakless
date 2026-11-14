@@ -85,5 +85,5 @@ export SILICONFLOW_API_KEY=...  OPENROUTER_API_KEY=...        # your own keys
 python3 tests/siliconflow/make_typeless_sample.py 60           # needs your own local Typeless library
 python3 tests/siliconflow/tl_eval.py 60                        # SiliconFlow ASR vs Typeless
 python3 tests/siliconflow/stt_or.py 60                         # OpenRouter STT models vs Typeless
-python3 tests/siliconflow/prompt_iter.py v0 v1 && python3 tests/siliconflow/judge.py v0 v1
+python3 tests/siliconflow/judge.py v0 v1   # compares two prompt variants of your own (prompt files are not shipped)
 ```

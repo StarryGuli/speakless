@@ -85,5 +85,5 @@ export SILICONFLOW_API_KEY=...  OPENROUTER_API_KEY=...        # 用你自己的 
 python3 tests/siliconflow/make_typeless_sample.py 60           # 需要你本机有 Typeless 库
 python3 tests/siliconflow/tl_eval.py 60                        # 硅基流动 ASR 对照 Typeless
 python3 tests/siliconflow/stt_or.py 60                         # OpenRouter 转写模型对照 Typeless
-python3 tests/siliconflow/prompt_iter.py v0 v1 && python3 tests/siliconflow/judge.py v0 v1
+python3 tests/siliconflow/judge.py v0 v1   # compares two prompt variants of your own (prompt files are not shipped)
 ```
