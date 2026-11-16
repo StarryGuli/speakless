@@ -72,6 +72,7 @@ final class DictationController {
         live.phase = .idle
         live.askMode = false
         bar.hide()
+        PreviewCard.shared.hide()
         Sounds.cue(.stop)
     }
 
@@ -286,10 +287,14 @@ final class DictationController {
                 let corrProv = setup.provider(settings.correction.providerId)
                 item.correctorProviderName = corrProv?.name
                 item.correctorLocal = corrProv?.isLocalModel
+                // 只有真的会"思考"的长句才弹预览卡；短句整理很快，不弹，免得盖住输入框
+                let willThink = raw.count >= 45 && settings.correction.providerId == "siliconflow" && settings.correctorModel.lowercased().contains("deepseek")
+                if willThink { PreviewCard.shared.begin(raw: raw) }
                 let result = await withTimeout(settings.correctionWait(forChars: raw.count, local: setup.provider(settings.correction.providerId)?.isLocalModel ?? false)) {
                     try await ModelClient.shared.correct(text: raw, glossary: glossary, extra: settings.customInstructions, prompt: settings.correctionPrompt, appName: front, context: context, setup: setup)
                 }
                 item.correctionMs = Int(Date().timeIntervalSince(t1) * 1000)
+                if case .success(let f) = result, !f.isEmpty { PreviewCard.shared.finish(fixed: f) } else { PreviewCard.shared.finish(fixed: nil) }
                 switch result {
                 case .success(let fixed) where !fixed.isEmpty:
                     item.text = fixed
