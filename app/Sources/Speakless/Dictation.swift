@@ -168,7 +168,7 @@ final class DictationController {
             return
         }
         // 几乎没有声音（麦克风被占用/静音/选错）：别送去识别，不然模型会对着噪声编出 “no, no”、“嗯”
-        if stats.peak < 0.004 || stats.voicedSeconds < 0.15 {
+        if stats.peak < 0.0012 || stats.voicedSeconds < 0.15 {
             streamed?.tasks.forEach { $0.cancel() }
             live.phase = .idle
             Sounds.cue(.error)
@@ -213,6 +213,7 @@ final class DictationController {
         let asrProv = setup.provider(settings.asr.providerId)
         item.asrProviderName = asrProv?.name
         item.asrLocal = asrProv?.isLocalModel
+        item.asrDirect = asrProv?.goesDirect
         var segs: [Int] = []
         do {
             let t0 = Date()
@@ -260,6 +261,7 @@ final class DictationController {
                 let ap = setup.provider(settings.correction.providerId)
                 item.correctorProviderName = ap?.name
                 item.correctorLocal = ap?.isLocalModel
+                item.correctorDirect = ap?.goesDirect
                 onMain { self.live.phase = .idle; self.live.askMode = false; self.bar.hide() }
                 AnswerPanelController.shared.show(question: raw)
                 do {
@@ -287,6 +289,7 @@ final class DictationController {
                 let corrProv = setup.provider(settings.correction.providerId)
                 item.correctorProviderName = corrProv?.name
                 item.correctorLocal = corrProv?.isLocalModel
+                item.correctorDirect = corrProv?.goesDirect
                 // 只有真的会"思考"的长句才弹预览卡；短句整理很快，不弹，免得盖住输入框
                 let willThink = raw.count >= 45 && settings.correction.providerId == "siliconflow" && settings.correctorModel.lowercased().contains("deepseek")
                 if willThink { PreviewCard.shared.begin(raw: raw) }

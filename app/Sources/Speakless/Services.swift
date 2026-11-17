@@ -149,6 +149,7 @@ final class Recorder {
     private var startedAt = Date()
     private var peakValue: Float = 0
     private var voicedSec = 0.0
+    private var rmsHist: [(Float, Double)] = []   // 每一小块的音量和时长，停止时按「这次录音自己的底噪」重新判断哪些是在说话
     private var restartCount = 0
 
     var onLevel: ((Float) -> Void)?
@@ -180,7 +181,7 @@ final class Recorder {
                 self.teardown()
                 self.lock.lock()
                 self.samples = []; self.skipRemaining = Int(skip * 16000)
-                self.peakValue = 0; self.voicedSec = 0; self.startedAt = Date(); self.restartCount = 0
+                self.peakValue = 0; self.voicedSec = 0; self.rmsHist = []; self.startedAt = Date(); self.restartCount = 0
                 self.lock.unlock()
                 self.wantedDevice = deviceUID
                 try self.buildAndStart(deviceUID: deviceUID)
@@ -202,7 +203,13 @@ final class Recorder {
     func stop() -> (wav: Data, seconds: Double) {
         queue.sync {
             teardown()
-            lock.lock(); let pcm = samples; lastPCM = pcm; samples = []; let peak = peakValue; let voiced = voicedSec; lock.unlock()
+            lock.lock(); let pcm = samples; lastPCM = pcm; samples = []; let peak = peakValue; var voiced = voicedSec; let hist = rmsHist; lock.unlock()
+            // 不用固定音量线：轻声说话、环境很安静时音量很低。以这次录音自己的底噪（最安静的 10%）为准，高出 2.5 倍就算在说话
+            if hist.count >= 10 {
+                let floor = hist.map { $0.0 }.sorted()[hist.count / 10]
+                let thr = max(0.0008, floor * 2.5)
+                voiced = max(voiced, hist.filter { $0.0 > thr }.reduce(0) { $0 + $1.1 })
+            }
             LevelMeter.shared.level = 0
             let secs = Double(pcm.count) / 16000
             lastStats = RecStats(seconds: secs, peak: peak, voicedSeconds: voiced, device: deviceName)
@@ -323,6 +330,7 @@ final class Recorder {
         lock.lock()
         peakValue = max(peakValue, pk)
         if rms > 0.006 { voicedSec += Double(n) / rate }
+        rmsHist.append((rms, Double(n) / rate))
         lock.unlock()
         // 音量条：按分贝算（人耳对响度是对数的），再按最近的最响处自动放大，轻声说话、麦克风收音小的时候也动得明显
         let db = 20 * log10(max(rms, 1e-5))

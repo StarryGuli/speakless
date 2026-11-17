@@ -91,6 +91,8 @@ final class AutoLearn {
 
     private func attempt(_ n: Int, text: String, gen: Int) {
         guard gen == generation else { return }
+        // Electron 类软件（Claude 桌面版等）每次都要先打开开关才肯交出输入框内容；提前打开，省掉第一次必失败的那一轮
+        if n == 0 { Self.enableManualAccessibility(pid: pid) }
         let delays = [0.5, 0.7, 1.0, 1.4, 2.0]
         switch inspect(text) {
         case .ready(let el, let v):
@@ -287,6 +289,12 @@ final class AutoLearn {
         let extraLatin = Set(tokenize(t).filter { $0.first?.isASCII == true && $0.contains(where: \.isLetter) }.map { $0.lowercased() })
             .subtracting(Set(tokenize(changed).map { $0.lowercased() }))
         if !extraLatin.isEmpty { return "also contains words you didn't change (\(extraLatin.sorted().joined(separator: ", ")))" }
+        // 输入法还在拼音状态：「打ma」这种，汉字后面紧跟着没打完的小写拼音（输入框里能读到还没上屏的拼音）
+        let sc = Array(t)
+        for (i, ch) in sc.enumerated() where ch.isASCII && ch.isLowercase && i > 0 && sc[i - 1].unicodeScalars.contains(where: { (0x4E00...0x9FFF).contains($0.value) }) {
+            var j = i; while j < sc.count, sc[j].isASCII, sc[j].isLowercase { j += 1 }
+            if j - i <= 6 && j == sc.count { return "ends with unfinished pinyin (the input method hasn't committed it)" }
+        }
         // 中文：词最多 10 个字，并且被改的字至少占一半左右（避免把一大段话整个收进去）
         let han = t.unicodeScalars.filter { (0x4E00...0x9FFF).contains($0.value) }.count
         if han > 10 { return "too long (over 10 Chinese characters)" }

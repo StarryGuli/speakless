@@ -15,7 +15,7 @@ final class StreamASR {
     private let maxSegment = 45.0      // 一直不停顿时，到这个长度就在最安静的地方硬切
     private let frame = 1600           // 0.1 秒一格
     private var peakRMS: Float = 0       // 这次录音里出现过的最大音量（声音小的麦克风也要能认出「在说话」）
-    private var voicedRMS: Float { max(0.0025, min(0.008, peakRMS * 0.12)) }
+    private var voicedRMS: Float { max(0.0012, min(0.008, peakRMS * 0.12)) }
     private(set) var committed = 0     // 已经切走（送出识别）的样本数
     private(set) var tasks: [Task<(text: String, ms: Int), Error>] = []
     private var timer: Timer?

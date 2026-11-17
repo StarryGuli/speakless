@@ -255,6 +255,9 @@ struct HistoryItem: Identifiable, Codable, Equatable {
     var correctorProviderName: String? = nil
     var asrLocal: Bool? = nil
     var correctorLocal: Bool? = nil
+    /// 这次上传走的是直连还是系统代理（nil = 旧记录，没记过）
+    var asrDirect: Bool? = nil
+    var correctorDirect: Bool? = nil
     var seconds = 0.0
     var words = 0
     var note: String? = nil

@@ -125,7 +125,9 @@ final class AppState: ObservableObject {
     private func settingsChanged(old: AppSettings) {
         if old.appearance != settings.appearance { applyAppearance() }
         if old.showInDock != settings.showInDock { applyActivationPolicy() }
-        if old.launchAtLogin != settings.launchAtLogin {
+        // 只有打包后的 .app 才注册开机启动。swift run / .build/debug 的裸可执行文件注册后，
+        // 开机会各自弹出一个终端窗口并重复启动（每次调试都会多一条登录项）。
+        if old.launchAtLogin != settings.launchAtLogin, Bundle.main.bundlePath.hasSuffix(".app") {
             if #available(macOS 13.0, *) {
                 do {
                     if settings.launchAtLogin { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }

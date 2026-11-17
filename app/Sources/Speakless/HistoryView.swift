@@ -169,9 +169,9 @@ struct HistoryRow: View {
     private var timing: some View {
         VStack(alignment: .trailing, spacing: 0) {
             if item.kind == .dictation, !item.asrModel.isEmpty {
-                line("Recognise", recTime, local: item.asrLocal ?? item.asrProvider.flatMap { app.provider($0)?.isLocalModel }, provider: shortProv(item.asrProviderName ?? item.asrProvider.flatMap { app.provider($0)?.name } ?? item.asrProvider), model: item.asrModel)
+                line("Recognise", recTime, local: item.asrLocal ?? item.asrProvider.flatMap { app.provider($0)?.isLocalModel }, direct: item.asrDirect, provider: shortProv(item.asrProviderName ?? item.asrProvider.flatMap { app.provider($0)?.name } ?? item.asrProvider), model: item.asrModel)
                 if let c = item.correctorModel {
-                    line("Correct", secs(item.correctionMs), local: item.correctorLocal ?? item.correctorProvider.flatMap { app.provider($0)?.isLocalModel }, provider: shortProv(item.correctorProviderName ?? item.correctorProvider.flatMap { app.provider($0)?.name } ?? item.correctorProvider), model: c)
+                    line("Correct", secs(item.correctionMs), local: item.correctorLocal ?? item.correctorProvider.flatMap { app.provider($0)?.isLocalModel }, direct: item.correctorDirect, provider: shortProv(item.correctorProviderName ?? item.correctorProvider.flatMap { app.provider($0)?.name } ?? item.correctorProvider), model: c)
                 }
             }
         }
@@ -192,9 +192,10 @@ struct HistoryRow: View {
         return secs(item.asrMs)
     }
 
-    private func line(_ title: String, _ time: String, local: Bool?, provider: String?, model: String) -> some View {
+    private func line(_ title: String, _ time: String, local: Bool?, direct: Bool?, provider: String?, model: String) -> some View {
         let tag = local.map { $0 ? "Local" : "Online" }
-        let parts = [tag, provider, shortModel(model)].compactMap { $0 }.joined(separator: " · ")
+        let route: String? = (local == true) ? nil : direct.map { $0 ? "Direct" : "Via proxy" }
+        let parts = [tag, route, provider, shortModel(model)].compactMap { $0 }.joined(separator: " · ")
         return (Text(title + " ") + Text(time).fontWeight(.semibold).foregroundColor(.primary) + Text(" · " + parts))
             .lineLimit(1).truncationMode(.middle)
     }
